@@ -57,7 +57,7 @@ function init()
                 .prependTo('.container');
         });
     }).appendTo('.main .col:first-child');
-    $('.selectaction').live('change', function()
+    $('.selectaction').on('change', function()
     {
         $(this).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
         $.get('/change-' + $(this).closest('.row').attr('id'), function()
@@ -65,7 +65,7 @@ function init()
             $(this).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
         })
     });
-    $('.delaction').live('click', function()
+    $('.delaction').on('click', function()
     {
         $(this).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
         $.get('/del-' + $(this).closest('.row').attr('id'), function()
