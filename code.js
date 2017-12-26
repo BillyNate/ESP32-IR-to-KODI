@@ -1,5 +1,6 @@
 var cdnjsURL = 'https://cdnjs.cloudflare.com/ajax/libs/',
-    $;
+    $,
+    actions = ['Left', 'Right', 'Up', 'Down', 'Select', 'Enter', 'PageUp', 'PageDown', 'Highlight', 'ParentDir', 'PreviousMenu', 'Back', 'Info', 'Pause', 'Stop', 'SkipNext', 'SkipPrevious', 'FullScreen', 'togglefullscreen', 'AspectRatio', 'StepForward', 'StepBack', 'BigStepForward', 'BigStepBack', 'SmallStepBack', 'Seek', 'ChapterOrBigStepForward', 'ChapterOrBigStepBack', 'NextScene', 'PreviousScene', 'OSD', 'PlayDVD', 'ShowVideoMenu', 'ShowSubtitles', 'NextSubtitle', 'SubtitleShiftUp', 'SubtitleShiftDown', 'SubtitleAlign', 'CodecInfo', 'NextPicture', 'PreviousPicture', 'ZoomOut', 'ZoomIn', 'IncreasePAR', 'DecreasePAR', 'Queue', 'Filter', 'Playlist', 'ZoomNormal', 'ZoomLevel1', 'ZoomLevel2', 'ZoomLevel3', 'ZoomLevel4', 'ZoomLevel5', 'ZoomLevel6', 'ZoomLevel7', 'ZoomLevel8', 'ZoomLevel9', 'NextCalibration', 'ResetCalibration', 'AnalogMove', 'Rotate', 'rotateccw', 'Close', 'subtitledelay', 'SubtitleDelayMinus', 'SubtitleDelayPlus', 'audiodelay', 'AudioDelayMinus', 'AudioDelayPlus', 'AudioNextLanguage', 'NextResolution', 'Number0', 'Number1', 'Number2', 'Number3', 'Number4', 'Number5', 'Number6', 'Number7', 'Number8', 'Number9', 'FastForward', 'Rewind', 'Play', 'PlayPause', 'Delete', 'Copy', 'Move', 'Rename', 'HideSubmenu', 'Screenshot', 'ShutDown()', 'VolumeUp', 'VolumeDown', 'Mute', 'volampup', 'volampdown', 'audiotoggledigital', 'BackSpace', 'ScrollUp', 'ScrollDown', 'AnalogFastForward', 'AnalogRewind', 'AnalogSeekForward', 'AnalogSeekBack', 'MoveItemUp', 'MoveItemDown', 'Menu', 'ContextMenu', 'Shift', 'Symbols', 'CursorLeft', 'CursorRight', 'ShowTime', 'visualisationpresetlist', 'ShowPreset', 'NextPreset', 'PreviousPreset', 'LockPreset', 'RandomPreset', 'IncreaseRating', 'DecreaseRating', 'ToggleWatched', 'NextLetter', 'PrevLetter', 'JumpSMS2', 'JumpSMS3', 'JumpSMS4', 'JumpSMS5', 'JumpSMS6', 'JumpSMS7', 'JumpSMS8', 'JumpSMS9', 'FilterSMS2', 'FilterSMS3', 'FilterSMS4', 'FilterSMS5', 'FilterSMS6', 'FilterSMS7', 'FilterSMS8', 'FilterSMS9', 'verticalshiftup', 'verticalshiftdown', 'scanitem', 'reloadkeymaps', 'increasevisrating', 'decreasevisrating', 'firstpage', 'lastpage', 'guiprofile', 'red', 'green', 'yellow', 'blue', 'CreateBookmark', 'CreatEpisodeBookmark', 'NextChannelGroup', 'PreviousChannelGroup', 'ChannelUp', 'ChannelDown', 'PlayPvr', 'PlayPvrTV', 'PlayPvrRadio', 'Record', 'StereoMode', 'ToggleStereoMode', 'SwitchPlayer', 'UpdateLibrary(video)', 'SetRatring'];
 (function()
 {
     // Load the script
@@ -15,6 +16,11 @@ var cdnjsURL = 'https://cdnjs.cloudflare.com/ajax/libs/',
 
 function init()
 {
+    var $selectAction = $('<select>').addClass('form-control');
+    for(var i in actions)
+    {
+        $selectAction.append($('<option>').text(actions[i]).val(actions[i]));
+    }
     $('head')
         .append($('<meta>').attr({ 'name': 'viewport', 'content': 'width=device-width, initial-scale=1, shrink-to-fit=no' }))
         .append($('<link>').attr({ 'rel': 'stylesheet', 'href': 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' }))
@@ -46,7 +52,7 @@ function init()
             $(button).prop('disabled', false).text('Listen...');
             $('<div>').addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto').text(data))
-                .append($('<div>').addClass('col col-md-auto').text('[Action]'))
+                .append($('<div>').addClass('col col-md-auto').append($selectAction))
                 .append($('<div>').addClass('col col-md-auto').text('[X]'))
                 .prependTo('.container');
         });
