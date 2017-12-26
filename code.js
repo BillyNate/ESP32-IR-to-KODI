@@ -70,8 +70,8 @@ function init()
             $(button).prop('disabled', false).text('Listen...');
             $('<div>').attr({ 'id': data }).addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto').text(data))
-                .append($('<div>').addClass('col col-md-auto').append($selectAction))
-                .append($('<div>').addClass('col col-md-auto').append($delaction))
+                .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true)))
+                .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
                 .prependTo('.container');
         });
     }).appendTo('.main .col:first-child');
