@@ -16,7 +16,7 @@ var cdnjsURL = 'https://cdnjs.cloudflare.com/ajax/libs/',
 
 function init()
 {
-    var $selectAction = $('<select>').addClass('form-control');
+    var $selectAction = $('<select>').addClass('selectaction form-control');
     for(var i in actions)
     {
         $selectAction.append($('<option>').text(actions[i]).val(actions[i]));
@@ -50,11 +50,27 @@ function init()
         {
             clearInterval(interval);
             $(button).prop('disabled', false).text('Listen...');
-            $('<div>').addClass('row justify-content-center')
+            $('<div>').attr({ 'id': data }).addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto').text(data))
                 .append($('<div>').addClass('col col-md-auto').append($selectAction))
-                .append($('<div>').addClass('col col-md-auto').append($('<button>').addClass('btn').text('X')))
+                .append($('<div>').addClass('col col-md-auto').append($('<button>').addClass('delaction btn').text('X')))
                 .prependTo('.container');
         });
     }).appendTo('.main .col:first-child');
+    $('.selectaction').live('change', function()
+    {
+        $(this).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
+        $.get('/change-' + $(this).closest('.row').attr('id'), function()
+        {
+            $(this).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
+        })
+    });
+    $('.delaction').live('click', function()
+    {
+        $(this).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
+        $.get('/del-' + $(this).closest('.row').attr('id'), function()
+        {
+            $(this).closest('.row').remove();
+        });
+    });
 }
