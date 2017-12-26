@@ -50,24 +50,24 @@ function init()
         .append($('<div>').addClass('col col-md-auto'))
         .append($('<div>').addClass('col col-md-auto'))
         .append($('<div>').addClass('col col-md-auto'));
-    $('<button>').text('Listen...').addClass('btn').on('click', function()
+    $('<button>').text('add_box').addClass('btn material-icons').on('click', function()
     {
         $(this).prop('disabled', true);
         var button = this,
-            sec = 1,
+            sec = 0,
             interval = setInterval(function()
             {
-                $(button).text('Listen' + Array(sec+1).join('.'));
+                $(button).text('picture_in_picture' + (sec % 2 ? '_alt' : '')).css({ 'transform': 'scaleX(' + (Math.floor(sec/2)*-2+1) + ')' });
                 sec ++
                 if(sec > 3)
                 {
-                    sec = 1;
+                    sec = 0;
                 }
             }, 500);
         $.get('/listen', function(data)
         {
             clearInterval(interval);
-            $(button).prop('disabled', false).text('Listen...');
+            $(button).prop('disabled', false).text('add_box').css({ 'transform': 'none' });
             $('<div>').attr({ 'id': data }).addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto').text(data))
                 .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true)))
