@@ -27,6 +27,7 @@ function init()
         .append($('<div>').addClass('col col-md-auto'));
     $('<button>').text('Listen...').addClass('btn').on('click', function()
     {
+        $(this).prop('disabled', true);
         var button = this,
             sec = 1,
             interval = setInterval(function()
@@ -41,7 +42,7 @@ function init()
         $.get('/listen', function(data)
         {
             clearInterval(interval);
-            $(button).text('Listen...');
+            $(button).prop('disabled', false).text('Listen...');
             $('<p>').text(data).appendTo('body');
         });
     }).appendTo('.main .col:first-child');
