@@ -25,7 +25,7 @@ function init()
                 $(select).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
             })
         }),
-        $delaction = $('<button>').addClass('delaction btn').text('X').on('click', function()
+        $delaction = $('<button>').addClass('delaction btn material-icons').text('delete').on('click', function()
         {
             var button = this;
             $(button).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
@@ -41,8 +41,8 @@ function init()
     }
     $('head')
         .append($('<meta>').attr({ 'name': 'viewport', 'content': 'width=device-width, initial-scale=1, shrink-to-fit=no' }))
-        .append($('<link>').attr({ 'rel': 'stylesheet', 'href': 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' }))
         .append($('<link>').attr({ 'rel': 'stylesheet', 'href': 'https://unpkg.com/bootstrap-material-design@4.0.0-beta.4/dist/css/bootstrap-material-design.min.css' }))
+        .append($('<link>').attr({ 'rel': 'stylesheet', 'href': 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' }))
         .append($('<script>').attr({ 'srç': 'https://unpkg.com/bootstrap-material-design@4.0.0-beta.4/dist/js/bootstrap-material-design.js' }));
     
     $('<div>').addClass('container').appendTo('body').append($('<div>').addClass('main row justify-content-center'));
