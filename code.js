@@ -53,6 +53,7 @@ function init()
     $('<button>').text('add_box').addClass('btn material-icons').on('click', function()
     {
         $(this).prop('disabled', true);
+        $('.container .col.font-weight-bold').removeClass('font-weight-bold')
         var button = this,
             sec = 0,
             interval = setInterval(function()
@@ -70,11 +71,18 @@ function init()
             $(button).prop('disabled', false).text('add_box').css({ 'transform': 'none' });
             if(data.trim().length > 0)
             {
-                $('<div>').attr({ 'id': data }).addClass('row justify-content-center')
-                    .append($('<div>').addClass('col col-md-auto').text(data))
-                    .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true)))
-                    .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
-                    .prependTo('.container');
+                if($('.container .row').filter('#' + data.trim()).length > 0)
+                {
+                    $('.container .row').filter('#' + data.trim()).find('.col:first-child').addClass('font-weight-bold');
+                }
+                else
+                {
+                    $('<div>').attr({ 'id': data.trim() }).addClass('row justify-content-center')
+                        .append($('<div>').addClass('col col-md-auto font-weight-bold').text(data.trim()))
+                        .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true)))
+                        .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
+                        .prependTo('.container');
+                }
             }
         });
     }).appendTo('.main .col:first-child');
