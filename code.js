@@ -28,7 +28,7 @@ function init()
         $delaction = $('<button>').addClass('delaction btn material-icons').text('delete').on('click', function()
         {
             var button = this;
-            $(button).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
+            $(button).prop('disabled', true).closest('.row').find('.selectaction').prop('disabled', true);
             $.get('/del-' + $(button).closest('.row').attr('id'), function()
             {
                 $(button).closest('.row').remove();
@@ -68,11 +68,14 @@ function init()
         {
             clearInterval(interval);
             $(button).prop('disabled', false).text('add_box').css({ 'transform': 'none' });
-            $('<div>').attr({ 'id': data }).addClass('row justify-content-center')
-                .append($('<div>').addClass('col col-md-auto').text(data))
-                .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true)))
-                .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
-                .prependTo('.container');
+            if(data.trim().length > 0)
+            {
+                $('<div>').attr({ 'id': data }).addClass('row justify-content-center')
+                    .append($('<div>').addClass('col col-md-auto').text(data))
+                    .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true)))
+                    .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
+                    .prependTo('.container');
+            }
         });
     }).appendTo('.main .col:first-child');
 }
