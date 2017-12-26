@@ -21,8 +21,11 @@ function init()
         .append($('<link>').attr({ 'rel': 'stylesheet', 'href': cdnjsURL + 'bootstrap-material-design/4.0.2/bootstrap-material-design.min.css' }))
         .append($('<script>').attr({ 'srç': cdnjsURL + 'bootstrap-material-design/4.0.2/bootstrap-material-design.umd.min.js' }));
     
-    $('<div>').addClass('main container').appendTo('body');
-    $('<button>').text('Listen...').addClass('btn').appendTo('.main').on('click', function()
+    $('<div>').addClass('container').appendTo('body').append($('<div>').addClass('main row justify-content-center'));
+    $('.main.row')
+        .append($('<div>').addClass('col col-md-auto'))
+        .append($('<div>').addClass('col col-md-auto'));
+    $('<button>').text('Listen...').addClass('btn').on('click', function()
     {
         var button = this,
             sec = 1,
@@ -41,5 +44,5 @@ function init()
             $(button).text('Listen...');
             $('<p>').text(data).appendTo('body');
         });
-    });
+    }).appendTo('.main .col:first-child');
 }
