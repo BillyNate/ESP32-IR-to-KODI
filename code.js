@@ -18,18 +18,20 @@ function init()
 {
     var $selectAction = $('<select>').addClass('selectaction form-control').on('change', function()
         {
-            $(this).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
-            $.get('/change-' + $(this).closest('.row').attr('id'), function()
+            var select = this;
+            $(select).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
+            $.get('/change-' + $(select).closest('.row').attr('id'), function()
             {
-                $(this).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
+                $(select).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
             })
         }),
         $delaction = $('<button>').addClass('delaction btn').text('X').on('click', function()
         {
-            $(this).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
-            $.get('/del-' + $(this).closest('.row').attr('id'), function()
+            var button = this;
+            $(button).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
+            $.get('/del-' + $(button).closest('.row').attr('id'), function()
             {
-                $(this).closest('.row').remove();
+                $(button).closest('.row').remove();
             });
         });
     
