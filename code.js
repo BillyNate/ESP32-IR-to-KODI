@@ -24,6 +24,7 @@ function init()
     $('<div>').addClass('container').appendTo('body').append($('<div>').addClass('main row justify-content-center'));
     $('.main.row')
         .append($('<div>').addClass('col col-md-auto'))
+        .append($('<div>').addClass('col col-md-auto'))
         .append($('<div>').addClass('col col-md-auto'));
     $('<button>').text('Listen...').addClass('btn').on('click', function()
     {
@@ -43,7 +44,11 @@ function init()
         {
             clearInterval(interval);
             $(button).prop('disabled', false).text('Listen...');
-            $('<p>').text(data).appendTo('body');
+            $('<div>').addClass('row justify-content-center')
+                .append($('<div>').addClass('col col-md-auto').text(data))
+                .append($('<div>').addClass('col col-md-auto').text('[Action]'))
+                .append($('<div>').addClass('col col-md-auto').text('[X]'))
+                .prependTo('.container');
         });
     }).appendTo('.main .col:first-child');
 }
