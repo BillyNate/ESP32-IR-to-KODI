@@ -1,10 +1,10 @@
-var $;
+var cdnjsURL = 'https://cdnjs.cloudflare.com/ajax/libs/',
+    $;
 (function()
 {
     // Load the script
     var script = document.createElement("script");
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js';
-    script.type = 'text/javascript';
+    script.src = cdnjsURL + 'jquery/3.2.1/jquery.min.js';
     script.onload = function()
     {
         $ = window.jQuery;
@@ -15,7 +15,14 @@ var $;
 
 function init()
 {
-    $('<button>').text('Listen...').appendTo('body').on('click', function()
+    $('head')
+        .append($('<meta>').attr({ 'name': 'viewport', 'content': 'width=device-width, initial-scale=1, shrink-to-fit=no' }))
+        .append($('<link>').attr({ 'rel': 'stylesheet', 'href': 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' }))
+        .append($('<link>').attr({ 'rel': 'stylesheet', 'href': cdnjsURL + 'bootstrap-material-design/4.0.2/bootstrap-material-design.min.css' }))
+        .append($('<script>').attr({ 'srç': cdnjsURL + 'bootstrap-material-design/4.0.2/bootstrap-material-design.umd.min.js' }));
+    
+    $('<div>').addClass('main container').appendTo('body');
+    $('<button>').text('Listen...').addClass('btn').appendTo('.main').on('click', function()
     {
         var button = this,
             sec = 1,
