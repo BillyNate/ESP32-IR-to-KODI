@@ -53,7 +53,7 @@ function init()
             $('<div>').addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto').text(data))
                 .append($('<div>').addClass('col col-md-auto').append($selectAction))
-                .append($('<div>').addClass('col col-md-auto').text('[X]'))
+                .append($('<div>').addClass('col col-md-auto').append($('<button>').addClass('btn').text('X')))
                 .prependTo('.container');
         });
     }).appendTo('.main .col:first-child');
