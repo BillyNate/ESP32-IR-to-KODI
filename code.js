@@ -16,7 +16,23 @@ var cdnjsURL = 'https://cdnjs.cloudflare.com/ajax/libs/',
 
 function init()
 {
-    var $selectAction = $('<select>').addClass('selectaction form-control');
+    var $selectAction = $('<select>').addClass('selectaction form-control').on('change', function()
+        {
+            $(this).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
+            $.get('/change-' + $(this).closest('.row').attr('id'), function()
+            {
+                $(this).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
+            })
+        }),
+        $delaction = $('<button>').addClass('delaction btn').text('X').on('click', function()
+        {
+            $(this).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
+            $.get('/del-' + $(this).closest('.row').attr('id'), function()
+            {
+                $(this).closest('.row').remove();
+            });
+        });
+    
     for(var i in actions)
     {
         $selectAction.append($('<option>').text(actions[i]).val(actions[i]));
@@ -53,24 +69,8 @@ function init()
             $('<div>').attr({ 'id': data }).addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto').text(data))
                 .append($('<div>').addClass('col col-md-auto').append($selectAction))
-                .append($('<div>').addClass('col col-md-auto').append($('<button>').addClass('delaction btn').text('X')))
+                .append($('<div>').addClass('col col-md-auto').append($delaction))
                 .prependTo('.container');
         });
     }).appendTo('.main .col:first-child');
-    $('.selectaction').on('change', function()
-    {
-        $(this).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
-        $.get('/change-' + $(this).closest('.row').attr('id'), function()
-        {
-            $(this).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
-        })
-    });
-    $('.delaction').on('click', function()
-    {
-        $(this).prop('disabled', true).close('row').find('.selectaction').prop('disabled', true);
-        $.get('/del-' + $(this).closest('.row').attr('id'), function()
-        {
-            $(this).closest('.row').remove();
-        });
-    });
 }
