@@ -18,8 +18,8 @@ function init()
     $('head')
         .append($('<meta>').attr({ 'name': 'viewport', 'content': 'width=device-width, initial-scale=1, shrink-to-fit=no' }))
         .append($('<link>').attr({ 'rel': 'stylesheet', 'href': 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' }))
-        .append($('<link>').attr({ 'rel': 'stylesheet', 'href': cdnjsURL + 'bootstrap-material-design/4.0.2/bootstrap-material-design.min.css' }))
-        .append($('<script>').attr({ 'srç': cdnjsURL + 'bootstrap-material-design/4.0.2/bootstrap-material-design.umd.min.js' }));
+        .append($('<link>').attr({ 'rel': 'stylesheet', 'href': 'https://unpkg.com/bootstrap-material-design@4.0.0-beta.4/dist/css/bootstrap-material-design.min.css' }))
+        .append($('<script>').attr({ 'srç': 'https://unpkg.com/bootstrap-material-design@4.0.0-beta.4/dist/js/bootstrap-material-design.js' }));
     
     $('<div>').addClass('container').appendTo('body').append($('<div>').addClass('main row justify-content-center'));
     $('.main.row')
