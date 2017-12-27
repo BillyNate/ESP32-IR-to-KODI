@@ -20,7 +20,7 @@ function init()
         {
             var select = this;
             $(select).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
-            $.get('/change-' + $(select).closest('.row').attr('id'), function()
+            $.get('/change-' + $(select).closest('.row').attr('id') + ':' + $(select).val(), function()
             {
                 $(select).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
             })
