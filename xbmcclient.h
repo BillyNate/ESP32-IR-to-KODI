@@ -38,6 +38,8 @@
 #include <fstream>
 #include <time.h>
 
+#include <WiFiUdp.h>
+
 #define STD_PORT       9777
 
 #define MS_ABSOLUTE    0x01
@@ -87,56 +89,6 @@
 
 #define ACTION_EXECBUILTIN 0x01
 #define ACTION_BUTTON      0x02
-
-class CAddress
-{
-private:
-  struct sockaddr_in m_Addr;
-public:
-  CAddress(int Port = STD_PORT)
-  {
-    m_Addr.sin_family = AF_INET;
-    m_Addr.sin_port = htons(Port);
-    m_Addr.sin_addr.s_addr = INADDR_ANY;
-    memset(m_Addr.sin_zero, '\0', sizeof m_Addr.sin_zero);
-  }
-
-  CAddress(const char *Address, int Port = STD_PORT)
-  {
-    m_Addr.sin_port = htons(Port);
-    
-    struct hostent *h;
-    if (Address == NULL || (h=gethostbyname(Address)) == NULL)
-    {
-        if (Address != NULL)
-			printf("Error: Get host by name\n");
-
-        m_Addr.sin_addr.s_addr  = INADDR_ANY;
-        m_Addr.sin_family       = AF_INET;
-    }
-    else
-    {
-      m_Addr.sin_family = h->h_addrtype;
-      m_Addr.sin_addr = *((struct in_addr *)h->h_addr);
-    }
-    memset(m_Addr.sin_zero, '\0', sizeof m_Addr.sin_zero);
-  }
-
-  void SetPort(int port)
-  {
-    m_Addr.sin_port = htons(port);
-  }
-
-  const sockaddr *GetAddress()
-  {
-    return ((struct sockaddr *)&m_Addr);
-  }
-
-  bool Bind(int Sockfd)
-  {
-    return (bind(Sockfd, (struct sockaddr *)&m_Addr, sizeof m_Addr) == 0);
-  }
-};
 
 class XBMCClientUtils
 {
@@ -200,7 +152,7 @@ public:
   virtual ~CPacket()
   { }
 
-  bool Send(int Socket, CAddress &Addr, unsigned int UID = XBMCClientUtils::GetUniqueIdentifier())
+  bool Send(WiFiUDP &udp, unsigned int UID = XBMCClientUtils::GetUniqueIdentifier())
   {
     if (m_Payload.empty())
       ConstructPayload();
@@ -231,11 +183,13 @@ public:
       for (j = 0; j < Send; j++)
         t[(32 + j)] = m_Payload[j + Sent];
 
-      int rtn = sendto(Socket, t, (32 + Send), 0, Addr.GetAddress(), sizeof(struct sockaddr));
-
+      //int rtn = sendto(Socket, t, (32 + Send), 0, Addr.GetSockAddress(), sizeof(struct sockaddr));
+      
+      udp.write(t, (32 + Send));
+      /*
       if (rtn != (32 + Send))
         SendSuccessful = false;
-
+      */
       Sent += Send;
     }
     return SendSuccessful;
@@ -737,18 +691,16 @@ public:
 class CXBMCClient
 {
 private:
-  CAddress      m_Addr;
-  int           m_Socket;
+  WiFiUDP       m_UDP;
+  const char   *m_IP;
+  unsigned int  m_Port;
   unsigned int  m_UID;
 public:
-  CXBMCClient(const char *IP = "127.0.0.1", int Port = 9777, int Socket = -1, unsigned int UID = 0)
+  CXBMCClient(WiFiUDP UDP, const char *IP = "127.0.0.1", int Port = 9777, unsigned int UID = 0)
   {
-    m_Addr = CAddress(IP, Port);
-    if (Socket == -1)
-      m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
-    else
-      m_Socket = Socket;
-
+    m_UDP = UDP;
+    m_IP = IP;
+    m_Port = Port;
     if (UID)
       m_UID = UID;
     else
@@ -757,74 +709,74 @@ public:
 
   void SendNOTIFICATION(const char *Title, const char *Message, unsigned short IconType, const char *IconFile = NULL)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketNOTIFICATION notification(Title, Message, IconType, IconFile);
-    notification.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    notification.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 
   void SendHELO(const char *DevName, unsigned short IconType, const char *IconFile = NULL)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketHELO helo(DevName, IconType, IconFile);
-    helo.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    helo.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
+  }
+
+  void SendPING()
+  {
+    CPacketPING ping = CPacketPING();
+    m_UDP.beginPacket(m_IP, m_Port);
+    ping.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 
   void SendButton(const char *Button, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketBUTTON button(Button, DeviceMap, Flags, Amount);
-    button.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    button.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 
   void SendButton(unsigned short ButtonCode, const char *DeviceMap, unsigned short Flags, unsigned short Amount = 0)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketBUTTON button(ButtonCode, DeviceMap, Flags, Amount);
-    button.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    button.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 
   void SendButton(unsigned short ButtonCode, unsigned Flags, unsigned short Amount = 0)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketBUTTON button(ButtonCode, Flags, Amount);
-    button.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    button.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 
   void SendMOUSE(int X, int Y, unsigned char Flag = MS_ABSOLUTE)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketMOUSE mouse(X, Y, Flag);
-    mouse.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    mouse.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 
   void SendLOG(int LogLevel, const char *Message, bool AutoPrintf = true)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketLOG log(LogLevel, Message, AutoPrintf);
-    log.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    log.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 
   void SendACTION(const char *ActionMessage, int ActionType = ACTION_EXECBUILTIN)
   {
-    if (m_Socket < 0)
-      return;
-
     CPacketACTION action(ActionMessage, ActionType);
-    action.Send(m_Socket, m_Addr, m_UID);
+    m_UDP.beginPacket(m_IP, m_Port);
+    action.Send(m_UDP, m_UID);
+    m_UDP.endPacket();
   }
 };
 
