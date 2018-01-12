@@ -16,39 +16,37 @@
 #ifndef ESP32_IR_REMOTE_H_
 #define ESP32_IR_REMOTE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdint.h>
-#include "esp32-hal.h"
-#include "esp_intr.h"
-#include "driver/gpio.h"
-#include "driver/rmt.h"
-#include "driver/periph_ctrl.h"
-#include "freertos/semphr.h"
-#include "soc/rmt_struct.h"
-
-#ifdef __cplusplus
+extern "C"
+{
+  #include <stdint.h>
+  #include "esp32-hal.h"
+  #include "esp_intr.h"
+  #include "driver/gpio.h"
+  #include "driver/rmt.h"
+  #include "driver/periph_ctrl.h"
+  #include "freertos/semphr.h"
+  #include "soc/rmt_struct.h"
 }
-#endif
 
-class ESP32_IRrecv {
+class ESP32_IRrecv
+{
   public:
-    ESP32_IRrecv (int recvpin);
-    ESP32_IRrecv (int recvpin, int port);
+    ESP32_IRrecv(int recvpin);
+    ESP32_IRrecv(int recvpin, int port);
     void init();
-    uint8_t readIR();
+    unsigned long readIR();
 
   private:
     int gpionum;
     int rmtport;
     void dumpStatus(rmt_channel_t channel);
     bool isInRange(rmt_item32_t item, int lowDuration, int highDuration, int tolerance);
-    bool NEC_is0(rmt_item32_t item);
-    bool NEC_is1(rmt_item32_t item);
-    uint8_t decodeNEC(rmt_item32_t *data, int numItems);
+    bool IR_is0(rmt_item32_t item);
+    bool IR_is1(rmt_item32_t item);
+    int  compare(unsigned int oldval,  unsigned int newval);
+    unsigned long decodeIR(rmt_item32_t *data, int numItems);
     
 };
 
 #endif /* ESP32_IR_REMOTE_H_ */
+

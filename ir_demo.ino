@@ -13,6 +13,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>. *
  * 
  * Based on the Code from Neil Kolban: https://github.com/nkolban/esp32-snippets/blob/master/hardware/infra_red/receiver/rmt_receiver.c
+ * Current code on https://github.com/pcbreflux/espressif/tree/master/esp32/arduino/sketchbook/ESP32_IR_Remote/ir_demo
  */
 #include "ESP32_IR_Remote.h"
 
@@ -21,11 +22,12 @@ const int LED1_PIN = 5; // pin on the ESP32
 const int LED2_PIN = 18; // pin on the ESP32
 
 ESP32_IRrecv irrecv(RECV_PIN,3);
-static uint8_t command=0;
-static uint8_t led1_stat=0;
-static uint8_t led2_stat=0;
+static unsigned long command = 0;
+static uint8_t led1_stat = 0;
+static uint8_t led2_stat = 0;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Serial.println("Initializing...");
   irrecv.init();
@@ -36,20 +38,22 @@ void setup() {
   digitalWrite(LED2_PIN, led2_stat);   // turn the LED initialy off (0)
 }
 
-void loop() {
-  command=irrecv.readIR();
-  if (command!=0) {
-    Serial.println(command);
-    if (command==22) {  // Button 1 on my remote
-      led1_stat=1-led1_stat;
+void loop()
+{
+  command = irrecv.readIR();
+  if(command != 0x00000000)
+  {
+    Serial.println(command, HEX);
+    if(command == 0x9669847A) // Button 1 on my remote
+    {
+      led1_stat 0 =1-led1_stat;
       digitalWrite(LED1_PIN, led1_stat);   // turn the LED on or off (1=HIGH is the voltage level)
     }
-    if (command==25) {  // Button 2 on my remote
-      led2_stat=1-led2_stat;
+    if(command == 0x9668857A) // Button 2 on my remote
+    {
+      led2_stat = 1-led2_stat;
       digitalWrite(LED2_PIN, led2_stat);   // turn the LED on or off (1=HIGH is the voltage level)
     }
-
-    
   }
+  delay(10);
 }
-

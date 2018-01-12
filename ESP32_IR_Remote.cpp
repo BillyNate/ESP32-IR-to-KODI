@@ -15,22 +15,16 @@
  * Based on the Code from Neil Kolban: https://github.com/nkolban/esp32-snippets/blob/master/hardware/infra_red/receiver/rmt_receiver.c
  */
 #include "Arduino.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "freertos/semphr.h"
-#include "freertos/ringbuf.h"
-
-#ifdef __cplusplus
+extern "C"
+{
+  #include "freertos/FreeRTOS.h"
+  #include "freertos/task.h"
+  #include "freertos/event_groups.h"
+  #include "freertos/semphr.h"
+  #include "freertos/ringbuf.h"
 }
-#endif
 
 #include "ESP32_IR_Remote.h"
-
 
 // Clock divisor (base clock is 80MHz)
 #define CLK_DIV 100
@@ -51,7 +45,8 @@ static RingbufHandle_t ringBuf;
 #define NEC_RPT_SPACE   2250
 
 
-void ESP32_IRrecv::dumpStatus(rmt_channel_t channel) {
+void ESP32_IRrecv::dumpStatus(rmt_channel_t channel)
+{
    bool loop_en;
    uint8_t div_cnt;
    uint8_t memNum;
@@ -69,9 +64,10 @@ void ESP32_IRrecv::dumpStatus(rmt_channel_t channel) {
    rmt_get_rx_idle_thresh(channel, &idleThreshold);
    rmt_get_status(channel, &status);
    rmt_get_source_clk(channel, &srcClk);
-
-   Serial.print("Status for RMT channel");
+   /*
+   Serial.print("Status for RMT channel: ");
    Serial.println(channel);
+   */
    /*
    Serial.println("- Loop enabled: %d", loop_en);
    Serial.println("- Clock divisor: %d", div_cnt);
@@ -84,25 +80,34 @@ void ESP32_IRrecv::dumpStatus(rmt_channel_t channel) {
    */
 }
 
-ESP32_IRrecv::ESP32_IRrecv(int recvpin, int port) {
-  
-  if (recvpin>=GPIO_NUM_0 && recvpin<GPIO_NUM_MAX) {
+ESP32_IRrecv::ESP32_IRrecv(int recvpin, int port)
+{
+  if(recvpin >= GPIO_NUM_0 && recvpin<GPIO_NUM_MAX)
+  {
     gpionum = recvpin;
-  } else {
+  }
+  else
+  {
     gpionum = (int)GPIO_NUM_22;
   }
-  if (port<=RMT_CHANNEL_0 && port<RMT_CHANNEL_MAX) {
+  
+  if(port <= RMT_CHANNEL_0 && port<RMT_CHANNEL_MAX)
+  {
     rmtport = port;
-  } else {
+  }
+  else
+  {
     rmtport = (int)RMT_CHANNEL_0;
   }
 }
 
-ESP32_IRrecv::ESP32_IRrecv(int recvpin) {
+ESP32_IRrecv::ESP32_IRrecv(int recvpin)
+{
   ESP32_IRrecv(recvpin,(int)RMT_CHANNEL_0);
 }
 
-void ESP32_IRrecv::init() {
+void ESP32_IRrecv::init()
+{
   rmt_config_t config;
   config.rmt_mode = RMT_MODE_RX;
   config.channel = (rmt_channel_t)rmtport;
@@ -116,100 +121,76 @@ void ESP32_IRrecv::init() {
   ESP_ERROR_CHECK(rmt_config(&config));
   ESP_ERROR_CHECK(rmt_driver_install(config.channel, 5000, 0));
 
-  rmt_get_ringbuf_handler(config.channel, &ringBuf);
+  rmt_get_ringbuf_handle(config.channel, &ringBuf);
   dumpStatus(config.channel);
   rmt_rx_start(config.channel, 1);
 
   return;
 }
 
-bool ESP32_IRrecv::isInRange(rmt_item32_t item, int lowDuration, int highDuration, int tolerance) {
+bool ESP32_IRrecv::isInRange(rmt_item32_t item, int lowDuration, int highDuration, int tolerance)
+{
   uint32_t lowValue = item.duration0 * 10 / TICK_10_US;
   uint32_t highValue = item.duration1 * 10 / TICK_10_US;
   /*
   ESP_LOGI(TAG, "lowValue=%d, highValue=%d, lowDuration=%d, highDuration=%d",
     lowValue, highValue, lowDuration, highDuration);
   */
-  if (lowValue < (lowDuration - tolerance) || lowValue > (lowDuration + tolerance) ||
-      (highValue != 0 &&
-      (highValue < (highDuration - tolerance) || highValue > (highDuration + tolerance)))) {
+  if(lowValue < (lowDuration - tolerance) || lowValue > (lowDuration + tolerance) || (highValue != 0 && (highValue < (highDuration - tolerance) || highValue > (highDuration + tolerance))))
+  {
     return false;
   }
   return true;
 }
 
-bool ESP32_IRrecv::NEC_is0(rmt_item32_t item) {
+bool ESP32_IRrecv::IR_is0(rmt_item32_t item)
+{
   return isInRange(item, NEC_BIT_MARK, NEC_BIT_MARK, 100);
 }
 
-bool ESP32_IRrecv::NEC_is1(rmt_item32_t item) {
+bool ESP32_IRrecv::IR_is1(rmt_item32_t item)
+{
   return isInRange(item, NEC_BIT_MARK, NEC_ONE_SPACE, 100);
 }
 
-uint8_t ESP32_IRrecv::decodeNEC(rmt_item32_t *data, int numItems) {
-  if (!isInRange(data[0], NEC_HDR_MARK, NEC_HDR_SPACE, 200)) {
-    //ESP_LOGD(TAG, "Not an NEC");
+unsigned long ESP32_IRrecv::decodeIR(rmt_item32_t *data, int numItems)
+{
+  if(!isInRange(data[0], NEC_HDR_MARK, NEC_HDR_SPACE, 200))
+  {
     return 0;
   }
   int i;
-  uint8_t address = 0, notAddress = 0, command = 0, notCommand = 0;
-  int accumCounter = 0;
-  uint8_t accumValue = 0;
-  for (i=1; i<numItems; i++) {
-    if (NEC_is0(data[i])) {
-      //ESP_LOGD(TAG, "%d: 0", i);
-      accumValue = accumValue >> 1;
-    } else if (NEC_is1(data[i])) {
-      //ESP_LOGD(TAG, "%d: 1", i);
-      accumValue = (accumValue >> 1) | 0x80;
-    } else {
-      //ESP_LOGD(TAG, "Unknown");
+  unsigned long totalAccum = 0;
+  for(i=0; i<numItems; i++)
+  {
+    if(IR_is0(data[i]))
+    {
+      totalAccum = totalAccum << 1;
     }
-    if (accumCounter == 7) {
-      accumCounter = 0;
-      //ESP_LOGD(TAG, "Byte: 0x%.2x", accumValue);
-      if (i==8) {
-        address = accumValue;
-      } else if (i==16) {
-        notAddress = accumValue;
-      } else if (i==24) {
-        command = accumValue;
-      } else if (i==32) {
-        notCommand = accumValue;
-      }
-      accumValue = 0;
-    } else {
-      accumCounter++;
+    else if(IR_is1(data[i]))
+    {
+      totalAccum = (totalAccum << 1) | 0x01;
     }
   }
-  //ESP_LOGD(TAG, "Address: 0x%.2x, NotAddress: 0x%.2x", address, notAddress ^ 0xff);
-  if (address != (notAddress ^ 0xff) || command != (notCommand ^ 0xff)) {
-    // Data mis match
-    return 0;
-  }
-  // Serial.print("Address: ");
-  // Serial.print(address);
-  // Serial.print(" Command: ");
-  // Serial.println(command);
-
-  return command;
+  return totalAccum;
 }
 
-
-uint8_t ESP32_IRrecv::readIR() {
+unsigned long ESP32_IRrecv::readIR()
+{
   size_t itemSize;
-  uint8_t command = 0;
+  unsigned long command = 0;
 
   rmt_item32_t* item = (rmt_item32_t*) xRingbufferReceive((RingbufHandle_t)ringBuf, (size_t *)&itemSize, (TickType_t)portMAX_DELAY);
 
   int numItems = itemSize / sizeof(rmt_item32_t);
   int i;
   rmt_item32_t *p = item;
-  for (i=0; i<numItems; i++) {
+  for(i=0; i<numItems; i++)
+  {
     p++;
   }
-  command=decodeNEC(item, numItems);
-  vRingbufferReturnItem(ringBuf, (void*) item);
-
+  command = decodeIR(item, numItems);
+  vRingbufferReturnItem(ringBuf, (void*)item);
+  
   return command;
 }
