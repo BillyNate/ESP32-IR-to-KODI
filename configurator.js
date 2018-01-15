@@ -22,7 +22,7 @@ function init()
             $(select).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
             $.get('/change-' + $(select).closest('.row').attr('id') + ':' + $(select).val(), function()
             {
-                $(select).prop('disabled', false).closest('row').find('.delaction').prop('disabled', false);
+                $(select).prop('disabled', false).closest('.row').find('.delaction').prop('disabled', false);
             })
         }),
         $delaction = $('<button>').addClass('delaction btn material-icons').text('delete').on('click', function()
