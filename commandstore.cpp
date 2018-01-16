@@ -161,7 +161,10 @@ void Commandstore::getCommand(unsigned long ircode, char* kodicommand, size_t* s
 {
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
   int8_t commandID = getCommandID(ircode);
-  getKodiString(commandID, kodicommand, size);
+  if(commandID >= 0)
+  {
+    getKodiString(commandID, kodicommand, size);
+  }
 }
 
 void Commandstore::removeCommand(unsigned long ircode)
@@ -217,6 +220,16 @@ void Commandstore::removeCommand(int8_t commandID)
       setCommandID(keys[i], tmpCommandID - 1);
     }
   }
+}
+
+uint8_t Commandstore::length()
+{
+  return getKeyNumber();
+}
+
+void Commandstore::getCommands(unsigned long *ircodes)
+{
+  getKeys(ircodes);
 }
 
 void Commandstore::getKodiString(int8_t commandID, char* kodicommand, size_t* size)
