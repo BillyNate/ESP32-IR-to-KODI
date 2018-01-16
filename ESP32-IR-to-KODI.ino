@@ -24,6 +24,7 @@
 #include "ESP32_IR_Remote.h"
 #include "xbmcclient.h"
 #include "commandstore.h"
+#include "ESP32-IR-to-KODI.h"
 
 // Somewhere there's a macro messing things up... Disable it!:
 #undef connect(a,b,c)
@@ -103,6 +104,7 @@ void serveWeb(void * parameter)
     {
       Serial.println("New Client.");          // print a message out the serial port
       String currentLine = "";                // make a String to hold incoming data from the client
+      String urlLine = "";
       bool respond = false;
       unsigned int page = 3;
       unsigned long startedLoopOn = 0;
@@ -120,6 +122,11 @@ void serveWeb(void * parameter)
           {
             // if the current line is blank, you got two newline characters in a row.
             // that's the end of the client HTTP request, so send a response:
+            if(currentLine.indexOf("GET /") >= 0)
+            {
+              urlLine = currentLine;
+            }
+            
             if(currentLine.length() == 0)
             {
               respond = true;
@@ -133,40 +140,86 @@ void serveWeb(void * parameter)
           {
             currentLine += c;      // add it to the end of the currentLine
           }
-  
-          if(currentLine.endsWith("GET /"))
-          {
-            page = 0;
-          }
-          else if(currentLine.endsWith("GET /listen"))
-          {
-            page = 1;
-          }
-          else if(index = currentLine.indexOf("GET /change-") >= 0)
-          {
-            caught = (int)strtol(currentLine.substring(index, currentLine.substring(index).indexOf(':') - 1).c_str(), NULL, 16);
-            page = 2;
-          }
-          else if(index = currentLine.indexOf("GET /del-") >= 0)
-          {
-            caught = (int)strtol(currentLine.substring(index).c_str(), NULL, 16);
-            page = 3;
-          }
 
+          if(respond)
+          {
+            if(urlLine.indexOf("GET / ") >= 0)
+            {
+              page = WEBPAGE_INDEX;
+            }
+            else if(urlLine.indexOf("GET /getall ") >= 0)
+            {
+              page = WEBPAGE_GETALL;
+            }
+            else if(urlLine.indexOf("GET /listen ") >= 0)
+            {
+              page = WEBPAGE_LISTEN;
+            }
+            else if(index = urlLine.indexOf("GET /change-") >= 0)
+            {
+              caught = strtoul(urlLine.substring(index + 11, urlLine.indexOf(":")).c_str(), NULL, 16);
+              Serial.print("Change received: ");
+              Serial.println(caught, HEX);
+              page = WEBPAGE_CHANGE;
+            }
+            else if(index = urlLine.indexOf("GET /del-") >= 0)
+            {
+              caught = strtoul(urlLine.substring(index + 8, index + 16).c_str(), NULL, 16);
+              Serial.print("Delete received: ");
+              Serial.println(caught, HEX);
+              page = WEBPAGE_DELETE;
+            }
+          }
+          
           if(respond)
           {
             // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
             // and a content-type so the client knows what's coming, then a blank line:
             serverclient.println("HTTP/1.1 200 OK");
-            serverclient.println("Content-type: text/html; charset=UTF-8");
+            serverclient.print("Content-type: ");
+            if(page != WEBPAGE_GETALL)
+            {
+              serverclient.print("text/html");
+            }
+            else
+            {
+              serverclient.println("application/json");
+            }
+            serverclient.println("; charset=UTF-8");
             serverclient.println();
             
-            if(page == 0)
+            if(page == WEBPAGE_INDEX)
             {
               serverclient.println("<!doctype html><html><head><script src=\"https://billynate.github.io/ESP32-IR-to-KODI/configurator.js\"></script></head><body></body></html>");
             }
-            else if(page == 1)
+            else if(page == WEBPAGE_GETALL)
             {
+              // TODO: Loop over all IR codes and their kodicommands, output this to the serverclient as JSON
+              uint8_t commandsLength = cmdstore.length();
+              unsigned long ircodes[commandsLength];
+              char kodicommand[24];
+              size_t kodicommandSize;
+              cmdstore.getCommands(ircodes);
+              serverclient.print("[");
+              for(uint8_t i=0; i<commandsLength; i++)
+              {
+                if(i > 0)
+                {
+                  serverclient.print(",");
+                }
+                cmdstore.getCommand(ircodes[i], kodicommand, &kodicommandSize);
+                serverclient.print("{\"ir\":\"");
+                serverclient.print(ircodes[i], HEX);
+                serverclient.print("\",\"cmd\":\"");
+                Serial.println(kodicommand);
+                serverclient.print(kodicommand);
+                serverclient.print("\"}");
+              }
+              serverclient.print("]");
+            }
+            else if(page == WEBPAGE_LISTEN)
+            {
+              caught = 0x00000000;
               listening = true;
               startedLoopOn = millis();
               while(caught == 0x00000000 && millis() - startedLoopOn < 10 * 1000)
@@ -175,18 +228,29 @@ void serveWeb(void * parameter)
               }
               if(caught != 0x00000000)
               {
+                char kodiCommand[24];
+                size_t kodiCommandSize = 0;
+
+                cmdstore.getCommand(caught, kodiCommand, &kodiCommandSize);
+
+                if(kodiCommandSize == 0) // This command isn't added yet, so do it now
+                {
+                  kodiCommandSize = 5 * sizeof(char);
+                  cmdstore.setCommand(caught, "noop", kodiCommandSize);
+                }
+                
                 serverclient.println(caught, HEX);
                 caught = 0;
               }
-              // TODO: Add the caught command to the NVS
             }
-            else if(page == 2)
+            else if(page == WEBPAGE_CHANGE)
             {
-              // TODO: Update the NVS 
+              Serial.println(urlLine.substring(urlLine.indexOf(":") + 1, urlLine.indexOf("HTTP") - 1).c_str());
+              cmdstore.setCommand(caught, urlLine.substring(urlLine.indexOf(":") + 1, urlLine.indexOf("HTTP") - 1).c_str(), ((urlLine.indexOf("HTTP") - 1) - (urlLine.indexOf(":") + 1)) * sizeof(char));
             }
-            else if(page == 3)
+            else if(page == WEBPAGE_DELETE)
             {
-              // TODO: Remove caught command from the NVS
+              cmdstore.removeCommand(caught);
             }
             // The HTTP response ends with another blank line:
             serverclient.println();            
