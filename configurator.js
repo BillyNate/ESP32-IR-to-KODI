@@ -35,6 +35,18 @@ function init()
             });
         });
     
+    $.fn.extend({ insertIRCommandRowBefore: function(irCode, selectedValue)
+    {
+        return this.each(function()
+        {
+            $('<div>').attr({ 'id': irCode }).addClass('row justify-content-center')
+                .append($('<div>').addClass('col col-md-auto font-weight-bold').text(irCode))
+                .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true).val(selectedValue)))
+                .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
+                .insertBefore(this);
+        });
+    } });
+    
     for(var i in actions)
     {
         $selectAction.append($('<option>').text(actions[i]).val(actions[i]));
@@ -77,13 +89,16 @@ function init()
                 }
                 else
                 {
-                    $('<div>').attr({ 'id': data.trim() }).addClass('row justify-content-center')
-                        .append($('<div>').addClass('col col-md-auto font-weight-bold').text(data.trim()))
-                        .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true)))
-                        .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
-                        .prependTo('.container');
+                    $('.main.row').insertIRCommandRowBefore(data.trim(), 'noop');
                 }
             }
         });
     }).appendTo('.main .col:first-child');
+    $.getJSON('/getall', function(data)
+    {
+        for(var i=0; i<data.length; i++)
+        {
+            $('.main.row').insertIRCommandRowBefore(data[i].ir, data[i].cmd);
+        }
+    });
 }
