@@ -46,6 +46,8 @@ class Commandstore
     void getCommand(unsigned long ircode, char* kodicommand, size_t* size);
     void setCommand(unsigned long ircode, char* kodicommand, size_t size);
     void removeCommand(unsigned long ircode);
+    void getCommands(unsigned long *ircodes);
+    uint8_t length();
     void eraseAll();
     void printNVSDebug();
 };
