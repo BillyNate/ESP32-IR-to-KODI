@@ -1,10 +1,11 @@
 #ifndef COMMANDSTORE_H_
 #define COMMANDSTORE_H_
 
+#include <cstring>
+#include <string>
+
 extern "C"
 {
-  #include <stdio.h>
-  #include <string.h>
   #include "esp_log.h"
   #include "nvs_flash.h"
   #include "nvs.h"
@@ -33,18 +34,18 @@ class Commandstore
     int8_t getCommandID(unsigned long ircode);
     void setCommandID(unsigned long ircode, int8_t commandID);
     void removeCommandID(unsigned long ircode);
-    int8_t findCommandID(char* kodicommand, size_t size);
+    int8_t findCommandID(std::string kodicommand);
     
-    void getKodiString(int8_t commandID, char* kodicommand, size_t* size);
-    void setKodiString(int8_t commandID, char* kodicommand);
+    std::string getKodiString(int8_t commandID);
+    void setKodiString(int8_t commandID, std::string kodicommand);
     void removeKodiString(int8_t commandID);
     
     void logNVSError(int nvserror, bool logIfOK=true);
     
   public:
     int begin(char* stringsns="strings", char* commandsns="commands", char* keysns="keys");
-    void getCommand(unsigned long ircode, char* kodicommand, size_t* size);
-    void setCommand(unsigned long ircode, char* kodicommand, size_t size);
+    std::string getCommand(unsigned long ircode);
+    void setCommand(unsigned long ircode, std::string kodicommand);
     void removeCommand(unsigned long ircode);
     void getCommands(unsigned long *ircodes);
     uint8_t length();
