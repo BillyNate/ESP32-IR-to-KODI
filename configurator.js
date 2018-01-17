@@ -90,6 +90,7 @@ function init()
                 else
                 {
                     $('.main.row').insertIRCommandRowBefore(data.trim(), 'noop');
+                    $('.row.main').prev('.row').find('select').focus();
                 }
             }
         });
