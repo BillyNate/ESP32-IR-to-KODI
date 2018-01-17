@@ -247,8 +247,8 @@ void serveWeb(void * parameter)
             {
               size_t pos = urlLine.find(":") + 1;
               size_t len = urlLine.find("HTTP") - pos - 1;
-              Serial.println(urlLine.substr(pos, len).c_str());
-              cmdstore.setCommand(caught, urlLine.substr(pos, len));
+              Serial.println(urlDecode(urlLine.substr(pos, len)).c_str());
+              cmdstore.setCommand(caught, urlDecode(urlLine.substr(pos, len)));
             }
             else if(page == WEBPAGE_DELETE)
             {
@@ -311,4 +311,33 @@ void readIR(void *parameter)
 void loop()
 {
   delay(portMAX_DELAY);
+}
+
+std::string urlDecode(std::string str)
+{
+  /*
+   * Function taken from https://stackoverflow.com/questions/154536/encode-decode-urls-in-c#answer-29962178
+   */
+  std::string ret;
+  char ch;
+  int i, ii, len = str.length();
+
+  for(i=0; i<len; i++)
+  {
+    if(str[i] != '%')
+    {
+      if(str[i] == '+')
+        ret += ' ';
+      else
+        ret += str[i];
+    }
+    else
+    {
+      sscanf(str.substr(i + 1, 2).c_str(), "%x", &ii);
+      ch = static_cast<char>(ii);
+      ret += ch;
+      i = i + 2;
+    }
+  }
+  return ret;
 }
