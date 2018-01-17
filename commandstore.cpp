@@ -1,5 +1,7 @@
 #include "commandstore.h"
 
+using namespace std;
+
 int Commandstore::begin(char* stringsns, char* commandsns, char* keysns)
 {
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
@@ -61,7 +63,7 @@ void Commandstore::printNVSDebug()
   uint8_t keyLength = getKeyNumber();
   unsigned long keys[keyLength];
   int8_t commandID;
-  char kodicommand[24];
+  string kodicommand;
   size_t strlength;
   uint8_t i;
 
@@ -70,7 +72,7 @@ void Commandstore::printNVSDebug()
   for(i=0; i<keyLength; i++)
   {
     commandID = getCommandID(keys[i]);
-    getKodiString(commandID, kodicommand, &strlength);
+    kodicommand = getKodiString(commandID);
     
     ESP_LOGE(LOG_TAG, "IRCode %02X points to commandID %i containing the Kodi commandstring \"%s\"", keys[i], commandID, kodicommand);
   }
@@ -78,10 +80,10 @@ void Commandstore::printNVSDebug()
   // TODO: Add check if no other commandID / Kodi commandstring exists!
 }
 
-void Commandstore::setCommand(unsigned long ircode, char* kodicommand, size_t size)
+void Commandstore::setCommand(unsigned long ircode, string kodicommand)
 {
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
-  int8_t newCommandID = findCommandID(kodicommand, size);
+  int8_t newCommandID = findCommandID(kodicommand);
   int8_t oldCommandID = getCommandID(ircode);
   unsigned long otherIRCode = 0x00000000;
   uint8_t otherIRCodePos = 0;
@@ -157,14 +159,16 @@ void Commandstore::setCommand(unsigned long ircode, char* kodicommand, size_t si
   }
 }
 
-void Commandstore::getCommand(unsigned long ircode, char* kodicommand, size_t* size)
+std::string Commandstore::getCommand(unsigned long ircode)
 {
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
   int8_t commandID = getCommandID(ircode);
+  string kodicommand;
   if(commandID >= 0)
   {
-    getKodiString(commandID, kodicommand, size);
+    kodicommand = getKodiString(commandID);
   }
+  return kodicommand;
 }
 
 void Commandstore::removeCommand(unsigned long ircode)
@@ -196,7 +200,7 @@ void Commandstore::removeCommand(int8_t commandID)
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
   int8_t commandIDLength = getCommandIDNumber();
   int8_t i;
-  char tmpKodicommand[24];
+  string tmpKodicommand;
   size_t kodicommandLength;
   uint8_t keyLength = getKeyNumber();
   unsigned long keys[keyLength];
@@ -204,10 +208,10 @@ void Commandstore::removeCommand(int8_t commandID)
   
   for(i=commandID; i<commandIDLength-1; i++) // Move all Kodi strings >= commandID one place back
   {
-    getKodiString(i+1, tmpKodicommand, &kodicommandLength);
+    tmpKodicommand = getKodiString(i + 1);
     setKodiString(i, tmpKodicommand);
   }
-  removeKodiString(commandIDLength-1); // Remove last Kodi string
+  removeKodiString(commandIDLength - 1); // Remove last Kodi string
 
   getKeys(keys);
   
@@ -232,7 +236,7 @@ void Commandstore::getCommands(unsigned long *ircodes)
   getKeys(ircodes);
 }
 
-void Commandstore::getKodiString(int8_t commandID, char* kodicommand, size_t* size)
+std::string Commandstore::getKodiString(int8_t commandID)
 {
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
@@ -246,7 +250,7 @@ void Commandstore::getKodiString(int8_t commandID, char* kodicommand, size_t* si
   if(err != ESP_OK)
   {
     logNVSError(err);
-    return;
+    return string();
   }
   
   char command[strlength];
@@ -254,11 +258,10 @@ void Commandstore::getKodiString(int8_t commandID, char* kodicommand, size_t* si
   err = nvs_get_str(stringstorage, cmdnr, command, &strlength);
   logNVSError(err, false);
 
-  memcpy(kodicommand, command, strlength);
-  *size = strlength;
+  return string(command);
 }
 
-void Commandstore::setKodiString(int8_t commandID, char* kodicommand)
+void Commandstore::setKodiString(int8_t commandID, string kodicommand)
 {
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
   /*
@@ -270,7 +273,7 @@ void Commandstore::setKodiString(int8_t commandID, char* kodicommand)
   
   itoa(commandID, cmdnr, 10);
 
-  err = nvs_set_str(stringstorage, cmdnr, kodicommand);
+  err = nvs_set_str(stringstorage, cmdnr, kodicommand.c_str());
   logNVSError(err, false);
   err = nvs_commit(stringstorage);
   logNVSError(err, false);
@@ -293,13 +296,12 @@ void Commandstore::removeKodiString(int8_t commandID)
   logNVSError(err, false);
 }
 
-int8_t Commandstore::findCommandID(char* kodicommand, size_t size)
+int8_t Commandstore::findCommandID(string kodicommand)
 {
   ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   int8_t commandLength = getCommandIDNumber();
   char cmdnr[3];
-  char command[24];
   size_t strlength;
   
   for(int i=0; i<commandLength; i++)
@@ -312,16 +314,19 @@ int8_t Commandstore::findCommandID(char* kodicommand, size_t size)
       logNVSError(err);
       break;
     }
-
-    if(err != ESP_ERR_NVS_NOT_FOUND && strlength == size)
+    
+    if(err != ESP_ERR_NVS_NOT_FOUND)
     {
+      char *command = (char*) malloc(strlength * sizeof(char));
+      
       err = nvs_get_str(stringstorage, cmdnr, command, &strlength);
       logNVSError(err, false);
       
-      if(memcmp(command, kodicommand, strlength) == 0)
+      if(kodicommand.compare(command) == 0)
       {
         return i;
       }
+      free(command);
     }
   }
   
