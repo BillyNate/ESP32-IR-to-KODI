@@ -103,8 +103,8 @@ void serveWeb(void * parameter)
     if(serverclient)                                // if you get a client,
     {
       Serial.println("New Client.");          // print a message out the serial port
-      String currentLine = "";                // make a String to hold incoming data from the client
-      String urlLine = "";
+      std::string currentLine = "";           // make a String to hold incoming data from the client
+      std::string urlLine = "";
       bool respond = false;
       unsigned int page = 3;
       unsigned long startedLoopOn = 0;
@@ -122,7 +122,7 @@ void serveWeb(void * parameter)
           {
             // if the current line is blank, you got two newline characters in a row.
             // that's the end of the client HTTP request, so send a response:
-            if(currentLine.indexOf("GET /") >= 0)
+            if(currentLine.find("GET /") != std::string::npos)
             {
               urlLine = currentLine;
             }
@@ -143,28 +143,28 @@ void serveWeb(void * parameter)
 
           if(respond)
           {
-            if(urlLine.indexOf("GET / ") >= 0)
+            if(urlLine.find("GET / ") != std::string::npos)
             {
               page = WEBPAGE_INDEX;
             }
-            else if(urlLine.indexOf("GET /getall ") >= 0)
+            else if(urlLine.find("GET /getall ") != std::string::npos)
             {
               page = WEBPAGE_GETALL;
             }
-            else if(urlLine.indexOf("GET /listen ") >= 0)
+            else if(urlLine.find("GET /listen ") != std::string::npos)
             {
               page = WEBPAGE_LISTEN;
             }
-            else if(index = urlLine.indexOf("GET /change-") >= 0)
+            else if(index = urlLine.find("GET /change-") != std::string::npos)
             {
-              caught = strtoul(urlLine.substring(index + 11, urlLine.indexOf(":")).c_str(), NULL, 16);
+              caught = strtoul(urlLine.substr(index + 11, urlLine.find(":") - index + 11).c_str(), NULL, 16);
               Serial.print("Change received: ");
               Serial.println(caught, HEX);
               page = WEBPAGE_CHANGE;
             }
-            else if(index = urlLine.indexOf("GET /del-") >= 0)
+            else if(index = urlLine.find("GET /del-") != std::string::npos)
             {
-              caught = strtoul(urlLine.substring(index + 8, index + 16).c_str(), NULL, 16);
+              caught = strtoul(urlLine.substr(index + 8, 8).c_str(), NULL, 16);
               Serial.print("Delete received: ");
               Serial.println(caught, HEX);
               page = WEBPAGE_DELETE;
@@ -197,7 +197,7 @@ void serveWeb(void * parameter)
               // TODO: Loop over all IR codes and their kodicommands, output this to the serverclient as JSON
               uint8_t commandsLength = cmdstore.length();
               unsigned long ircodes[commandsLength];
-              char kodicommand[24];
+              std::string kodicommand;
               size_t kodicommandSize;
               cmdstore.getCommands(ircodes);
               serverclient.print("[");
@@ -207,12 +207,12 @@ void serveWeb(void * parameter)
                 {
                   serverclient.print(",");
                 }
-                cmdstore.getCommand(ircodes[i], kodicommand, &kodicommandSize);
+                kodicommand = cmdstore.getCommand(ircodes[i]);
                 serverclient.print("{\"ir\":\"");
                 serverclient.print(ircodes[i], HEX);
                 serverclient.print("\",\"cmd\":\"");
-                Serial.println(kodicommand);
-                serverclient.print(kodicommand);
+                Serial.println(kodicommand.c_str());
+                serverclient.print(kodicommand.c_str());
                 serverclient.print("\"}");
               }
               serverclient.print("]");
@@ -228,15 +228,15 @@ void serveWeb(void * parameter)
               }
               if(caught != 0x00000000)
               {
-                char kodiCommand[24];
+                std::string kodiCommand;
                 size_t kodiCommandSize = 0;
 
-                cmdstore.getCommand(caught, kodiCommand, &kodiCommandSize);
+                kodiCommand = cmdstore.getCommand(caught);
 
                 if(kodiCommandSize == 0) // This command isn't added yet, so do it now
                 {
                   kodiCommandSize = 5 * sizeof(char);
-                  cmdstore.setCommand(caught, "noop", kodiCommandSize);
+                  cmdstore.setCommand(caught, std::string("noop"));
                 }
                 
                 serverclient.println(caught, HEX);
@@ -245,8 +245,10 @@ void serveWeb(void * parameter)
             }
             else if(page == WEBPAGE_CHANGE)
             {
-              Serial.println(urlLine.substring(urlLine.indexOf(":") + 1, urlLine.indexOf("HTTP") - 1).c_str());
-              cmdstore.setCommand(caught, urlLine.substring(urlLine.indexOf(":") + 1, urlLine.indexOf("HTTP") - 1).c_str(), ((urlLine.indexOf("HTTP") - 1) - (urlLine.indexOf(":") + 1)) * sizeof(char));
+              size_t pos = urlLine.find(":") + 1;
+              size_t len = urlLine.find("HTTP") - pos - 1;
+              Serial.println(urlLine.substr(pos, len).c_str());
+              cmdstore.setCommand(caught, urlLine.substr(pos, len));
             }
             else if(page == WEBPAGE_DELETE)
             {
@@ -278,8 +280,7 @@ void pingKodi(void * parameter)
 
 void readIR(void *parameter)
 {
-  char kodiCommand[24];
-  size_t kodiCommandSize = 0;
+  std::string kodiCommand;
   
   while(1)
   {
@@ -291,12 +292,11 @@ void readIR(void *parameter)
     }
     else if(command != 0x00000000)
     {
-      kodiCommandSize = 0;
-      cmdstore.getCommand(command, kodiCommand, &kodiCommandSize);
+      kodiCommand = cmdstore.getCommand(command);
       
-      if(kodiCommandSize != 0)
+      if(!kodiCommand.empty())
       {
-        eventclient.SendACTION(kodiCommand, ACTION_BUTTON);
+        eventclient.SendACTION(kodiCommand.c_str(), ACTION_BUTTON);
       }
       else
       {
