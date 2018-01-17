@@ -278,6 +278,9 @@ void pingKodi(void * parameter)
 
 void readIR(void *parameter)
 {
+  char kodiCommand[24];
+  size_t kodiCommandSize = 0;
+  
   while(1)
   {
     command = irrecv.readIR();
@@ -286,28 +289,19 @@ void readIR(void *parameter)
       caught = command;
       listening = false;
     }
-    else
+    else if(command != 0x00000000)
     {
-      switch(command)
+      kodiCommandSize = 0;
+      cmdstore.getCommand(command, kodiCommand, &kodiCommandSize);
+      
+      if(kodiCommandSize != 0)
       {
-        case 0x00000000:
-          //nothing
-          break;
-        case 0x9669847A:
-          eventclient.SendACTION("Left", ACTION_BUTTON);
-          break;
-        case 0x9668857A:
-          eventclient.SendACTION("Right", ACTION_BUTTON);
-          break;
-        case 0x966805FA:
-          eventclient.SendACTION("Up", ACTION_BUTTON);
-          break;
-        case 0x259482FA:
-          eventclient.SendACTION("Down", ACTION_BUTTON);
-          break;
-        default:
-          Serial.println(command, HEX);
-          break;
+        eventclient.SendACTION(kodiCommand, ACTION_BUTTON);
+      }
+      else
+      {
+        Serial.print("Received unknown IR command: ");
+        Serial.println(command, HEX);
       }
     }
     delay(10);
