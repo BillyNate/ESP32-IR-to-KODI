@@ -72,6 +72,19 @@ function init()
                 .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
                 .insertBefore(this);
         });
+    }, pipLoader: function()
+    {
+        var buttonEl = this;
+        return setInterval(function()
+        {
+            var sec = 0;
+            $(buttonEl).text('picture_in_picture' + (sec % 2 ? '_alt' : '')).css({ 'transform': 'scaleX(' + (Math.floor(sec/2)*-2+1) + ')' });
+            sec ++
+            if(sec > 3)
+            {
+                sec = 0;
+            }
+        }, 500);
     } });
     
     for(var i in actions)
@@ -89,21 +102,12 @@ function init()
         .append($('<div>').addClass('col col-md-auto'))
         .append($('<div>').addClass('col col-md-auto'))
         .append($('<div>').addClass('col col-md-auto'));
-    $('<button>').text('add_box').addClass('btn material-icons').on('click', function()
+    var initLoadInterval = $('<button>').text('add_box').addClass('btn material-icons').on('click', function()
     {
         $(this).prop('disabled', true);
         $('.container .col.font-weight-bold').removeClass('font-weight-bold')
-        var button = this,
-            sec = 0,
-            interval = setInterval(function()
-            {
-                $(button).text('picture_in_picture' + (sec % 2 ? '_alt' : '')).css({ 'transform': 'scaleX(' + (Math.floor(sec/2)*-2+1) + ')' });
-                sec ++
-                if(sec > 3)
-                {
-                    sec = 0;
-                }
-            }, 500);
+        var interval = $(this).pipLoader(),
+            button = this;
         $.get('/listen', function(data)
         {
             clearInterval(interval);
@@ -121,9 +125,11 @@ function init()
                 }
             }
         });
-    }).appendTo('.main .col:first-child');
+    }).appendTo('.main .col:first-child').prop('disabled', true).pipLoader();
     $.getJSON('/getall', function(data)
     {
+        $('.main.row button').text('add_box').prop('disabled', false);
+        clearInterval(initLoadInterval);
         for(var i=0; i<data.length; i++)
         {
             $('.main.row').insertIRCommandRowBefore(data[i].ir, data[i].cmd);
