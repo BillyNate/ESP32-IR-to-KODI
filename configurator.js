@@ -116,7 +116,7 @@ function init()
                 }
                 else
                 {
-                    $('.main.row').insertIRCommandRowBefore(data.trim(), 'noop');
+                    $('.main.row').insertIRCommandRowBefore(data.trim(), 'Noop');
                     $('.row.main').prev('.row').find('select').focus();
                 }
             }
