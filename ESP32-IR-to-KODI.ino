@@ -169,6 +169,11 @@ void serveWeb(void * parameter)
               Serial.println(caught, HEX);
               page = WEBPAGE_DELETE;
             }
+            else if(index = urlLine.find("GET /emit-") != std::string::npos)
+            {
+              caught = strtoul(urlLine.substr(index + 9, 8).c_str(), NULL, 16);
+              page = WEBPAGE_EMIT;
+            }
           }
           
           if(respond)
@@ -253,6 +258,14 @@ void serveWeb(void * parameter)
             else if(page == WEBPAGE_DELETE)
             {
               cmdstore.removeCommand(caught);
+            }
+            else if(page == WEBPAGE_EMIT)
+            {
+              std::string kodiCommand = cmdstore.getCommand(caught);
+              if(!kodiCommand.empty())
+              {
+                eventclient.SendACTION(kodiCommand.c_str(), ACTION_BUTTON);
+              }
             }
             // The HTTP response ends with another blank line:
             serverclient.println();            
