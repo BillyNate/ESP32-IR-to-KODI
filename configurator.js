@@ -1,10 +1,10 @@
 var cdnjsURL = 'https://cdnjs.cloudflare.com/ajax/libs/',
     $,
-    actions = ['Noop', 'Left', 'Right', 'Up', 'Down', 'Select', 'Enter', 'PageUp', 'PageDown', 'Highlight', 'ParentDir', 'PreviousMenu', 'Back', 'Info', 'Pause', 'Stop', 'SkipNext', 'SkipPrevious', 'FullScreen', 'togglefullscreen', 'AspectRatio', 'StepForward', 'StepBack', 'BigStepForward', 'BigStepBack', 'SmallStepBack', 'Seek', 'ChapterOrBigStepForward', 'ChapterOrBigStepBack', 'NextScene', 'PreviousScene', 'OSD', 'PlayDVD', 'ShowVideoMenu', 'ShowSubtitles', 'NextSubtitle', 'SubtitleShiftUp', 'SubtitleShiftDown', 'SubtitleAlign', 'CodecInfo', 'NextPicture', 'PreviousPicture', 'ZoomOut', 'ZoomIn', 'IncreasePAR', 'DecreasePAR', 'Queue', 'Filter', 'Playlist', 'ZoomNormal', 'ZoomLevel1', 'ZoomLevel2', 'ZoomLevel3', 'ZoomLevel4', 'ZoomLevel5', 'ZoomLevel6', 'ZoomLevel7', 'ZoomLevel8', 'ZoomLevel9', 'NextCalibration', 'ResetCalibration', 'AnalogMove', 'Rotate', 'rotateccw', 'Close', 'subtitledelay', 'SubtitleDelayMinus', 'SubtitleDelayPlus', 'audiodelay', 'AudioDelayMinus', 'AudioDelayPlus', 'AudioNextLanguage', 'NextResolution', 'Number0', 'Number1', 'Number2', 'Number3', 'Number4', 'Number5', 'Number6', 'Number7', 'Number8', 'Number9', 'FastForward', 'Rewind', 'Play', 'PlayPause', 'Delete', 'Copy', 'Move', 'Rename', 'HideSubmenu', 'Screenshot', 'ShutDown()', 'VolumeUp', 'VolumeDown', 'Mute', 'volampup', 'volampdown', 'audiotoggledigital', 'BackSpace', 'ScrollUp', 'ScrollDown', 'AnalogFastForward', 'AnalogRewind', 'AnalogSeekForward', 'AnalogSeekBack', 'MoveItemUp', 'MoveItemDown', 'Menu', 'ContextMenu', 'Shift', 'Symbols', 'CursorLeft', 'CursorRight', 'ShowTime', 'visualisationpresetlist', 'ShowPreset', 'NextPreset', 'PreviousPreset', 'LockPreset', 'RandomPreset', 'IncreaseRating', 'DecreaseRating', 'ToggleWatched', 'NextLetter', 'PrevLetter', 'JumpSMS2', 'JumpSMS3', 'JumpSMS4', 'JumpSMS5', 'JumpSMS6', 'JumpSMS7', 'JumpSMS8', 'JumpSMS9', 'FilterSMS2', 'FilterSMS3', 'FilterSMS4', 'FilterSMS5', 'FilterSMS6', 'FilterSMS7', 'FilterSMS8', 'FilterSMS9', 'verticalshiftup', 'verticalshiftdown', 'scanitem', 'reloadkeymaps', 'increasevisrating', 'decreasevisrating', 'firstpage', 'lastpage', 'guiprofile', 'red', 'green', 'yellow', 'blue', 'CreateBookmark', 'CreatEpisodeBookmark', 'NextChannelGroup', 'PreviousChannelGroup', 'ChannelUp', 'ChannelDown', 'PlayPvr', 'PlayPvrTV', 'PlayPvrRadio', 'Record', 'StereoMode', 'ToggleStereoMode', 'SwitchPlayer', 'UpdateLibrary(video)', 'SetRatring'];
+    actions = ['CUSTOM...', 'Noop', 'Left', 'Right', 'Up', 'Down', 'Select', 'Enter', 'PageUp', 'PageDown', 'Highlight', 'ParentDir', 'PreviousMenu', 'Back', 'Info', 'Pause', 'Stop', 'SkipNext', 'SkipPrevious', 'FullScreen', 'togglefullscreen', 'AspectRatio', 'StepForward', 'StepBack', 'BigStepForward', 'BigStepBack', 'SmallStepBack', 'Seek', 'ChapterOrBigStepForward', 'ChapterOrBigStepBack', 'NextScene', 'PreviousScene', 'OSD', 'PlayDVD', 'ShowVideoMenu', 'ShowSubtitles', 'NextSubtitle', 'SubtitleShiftUp', 'SubtitleShiftDown', 'SubtitleAlign', 'CodecInfo', 'NextPicture', 'PreviousPicture', 'ZoomOut', 'ZoomIn', 'IncreasePAR', 'DecreasePAR', 'Queue', 'Filter', 'Playlist', 'ZoomNormal', 'ZoomLevel1', 'ZoomLevel2', 'ZoomLevel3', 'ZoomLevel4', 'ZoomLevel5', 'ZoomLevel6', 'ZoomLevel7', 'ZoomLevel8', 'ZoomLevel9', 'NextCalibration', 'ResetCalibration', 'AnalogMove', 'Rotate', 'rotateccw', 'Close', 'subtitledelay', 'SubtitleDelayMinus', 'SubtitleDelayPlus', 'audiodelay', 'AudioDelayMinus', 'AudioDelayPlus', 'AudioNextLanguage', 'NextResolution', 'Number0', 'Number1', 'Number2', 'Number3', 'Number4', 'Number5', 'Number6', 'Number7', 'Number8', 'Number9', 'FastForward', 'Rewind', 'Play', 'PlayPause', 'Delete', 'Copy', 'Move', 'Rename', 'HideSubmenu', 'Screenshot', 'ShutDown()', 'VolumeUp', 'VolumeDown', 'Mute', 'volampup', 'volampdown', 'audiotoggledigital', 'BackSpace', 'ScrollUp', 'ScrollDown', 'AnalogFastForward', 'AnalogRewind', 'AnalogSeekForward', 'AnalogSeekBack', 'MoveItemUp', 'MoveItemDown', 'Menu', 'ContextMenu', 'Shift', 'Symbols', 'CursorLeft', 'CursorRight', 'ShowTime', 'visualisationpresetlist', 'ShowPreset', 'NextPreset', 'PreviousPreset', 'LockPreset', 'RandomPreset', 'IncreaseRating', 'DecreaseRating', 'ToggleWatched', 'NextLetter', 'PrevLetter', 'JumpSMS2', 'JumpSMS3', 'JumpSMS4', 'JumpSMS5', 'JumpSMS6', 'JumpSMS7', 'JumpSMS8', 'JumpSMS9', 'FilterSMS2', 'FilterSMS3', 'FilterSMS4', 'FilterSMS5', 'FilterSMS6', 'FilterSMS7', 'FilterSMS8', 'FilterSMS9', 'verticalshiftup', 'verticalshiftdown', 'scanitem', 'reloadkeymaps', 'increasevisrating', 'decreasevisrating', 'firstpage', 'lastpage', 'guiprofile', 'red', 'green', 'yellow', 'blue', 'CreateBookmark', 'CreatEpisodeBookmark', 'NextChannelGroup', 'PreviousChannelGroup', 'ChannelUp', 'ChannelDown', 'PlayPvr', 'PlayPvrTV', 'PlayPvrRadio', 'Record', 'StereoMode', 'ToggleStereoMode', 'SwitchPlayer', 'UpdateLibrary(video)', 'SetRatring'];
 (function()
 {
     // Load the script
-    var script = document.createElement("script");
+    var script = document.createElement('script');
     script.src = cdnjsURL + 'jquery/3.2.1/jquery.min.js';
     script.onload = function()
     {
@@ -16,14 +16,32 @@ var cdnjsURL = 'https://cdnjs.cloudflare.com/ajax/libs/',
 
 function init()
 {
-    var $selectAction = $('<select>').addClass('selectaction form-control').on('change', function()
+    var $inputAction = $('<input type="text">').addClass('form-control').on('change', function()
+        {
+            var input = this;
+            $(input).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
+            $.get('/change-' + $(input).closest('.row').attr('id') + ':' + $(input).val(), function()
+            {
+                $(input).prop('disabled', false).closest('.row').find('.delaction').prop('disabled', false);
+            });
+        }),
+        $selectAction = $('<select>').addClass('selectaction form-control').on('change', function()
         {
             var select = this;
-            $(select).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
-            $.get('/change-' + $(select).closest('.row').attr('id') + ':' + $(select).val(), function()
+            if($(select).val() == 'CUSTOM...')
             {
-                $(select).prop('disabled', false).closest('.row').find('.delaction').prop('disabled', false);
-            })
+                var input = $inputAction.clone(true, true);
+                $(select).after(input).remove();
+                $(input).focus();
+            }
+            else
+            {
+                $(select).prop('disabled', true).closest('.row').find('.delaction').prop('disabled', true);
+                $.get('/change-' + $(select).closest('.row').attr('id') + ':' + $(select).val(), function()
+                {
+                    $(select).prop('disabled', false).closest('.row').find('.delaction').prop('disabled', false);
+                });
+            }
         }),
         $delaction = $('<button>').addClass('delaction btn material-icons').text('delete').on('click', function()
         {
@@ -39,9 +57,18 @@ function init()
     {
         return this.each(function()
         {
+            var $actionElement;
+            if(actions.indexOf(selectedValue) >= 0)
+            {
+                $actionElement = $selectAction.clone(true, true);
+            }
+            else
+            {
+                $actionElement = $inputAction.clone(true, true);
+            }
             $('<div>').attr({ 'id': irCode }).addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto font-weight-bold').text(irCode))
-                .append($('<div>').addClass('col col-md-auto').append($selectAction.clone(true, true).val(selectedValue)))
+                .append($('<div>').addClass('col col-md-auto').append($actionElement.val(selectedValue)))
                 .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
                 .insertBefore(this);
         });
