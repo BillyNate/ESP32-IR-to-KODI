@@ -43,7 +43,7 @@ function init()
                 });
             }
         }),
-        $delaction = $('<button>').addClass('delaction btn material-icons').text('delete').on('click', function()
+        $delAction = $('<button>').addClass('delaction btn material-icons').text('delete').on('click', function()
         {
             var button = this;
             $(button).prop('disabled', true).closest('.row').find('.selectaction').prop('disabled', true);
@@ -75,7 +75,7 @@ function init()
                 .append($('<div>').addClass('col col-md-auto font-weight-bold').text(irCode))
                 .append($('<div>').addClass('col col-md-auto').append($emitAction.clone(true, true)))
                 .append($('<div>').addClass('col col-md-auto').append($actionElement.val(selectedValue)))
-                .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
+                .append($('<div>').addClass('col col-md-auto').append($delAction.clone(true, true)))
                 .insertBefore(this);
         });
     }, pipLoader: function()
