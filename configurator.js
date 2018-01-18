@@ -51,6 +51,11 @@ function init()
             {
                 $(button).closest('.row').remove();
             });
+        }),
+        $emitAction = $('<button>').addClass('emitaction btn material-icons').text('settings_remote').on('click', function()
+        {
+            var button = this;
+            $.get('/emit-' + $(button).closest('.row').attr('id'));
         });
     
     $.fn.extend({ insertIRCommandRowBefore: function(irCode, selectedValue)
@@ -68,6 +73,7 @@ function init()
             }
             $('<div>').attr({ 'id': irCode }).addClass('row justify-content-center')
                 .append($('<div>').addClass('col col-md-auto font-weight-bold').text(irCode))
+                .append($('<div>').addClass('col col-md-auto').append($emitAction.clone(true, true)))
                 .append($('<div>').addClass('col col-md-auto').append($actionElement.val(selectedValue)))
                 .append($('<div>').addClass('col col-md-auto').append($delaction.clone(true, true)))
                 .insertBefore(this);
