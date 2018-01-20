@@ -4,7 +4,7 @@ using namespace std;
 
 int Commandstore::begin(char* stringsns, char* commandsns, char* keysns)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   
   err = nvs_flash_init();
@@ -34,7 +34,7 @@ int Commandstore::begin(char* stringsns, char* commandsns, char* keysns)
 
 void Commandstore::eraseAll()
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   
   err = nvs_erase_all(stringstorage);
@@ -59,7 +59,7 @@ void Commandstore::eraseAll()
 
 void Commandstore::printNVSDebug()
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   uint8_t keyLength = getKeyNumber();
   unsigned long keys[keyLength];
   int8_t commandID;
@@ -74,7 +74,7 @@ void Commandstore::printNVSDebug()
     commandID = getCommandID(keys[i]);
     kodicommand = getKodiString(commandID);
     
-    ESP_LOGE(LOG_TAG, "IRCode %02X points to commandID %i containing the Kodi commandstring \"%s\"", keys[i], commandID, kodicommand);
+    ESP_LOGI(LOG_TAG, "IRCode %02X points to commandID %i containing the Kodi commandstring \"%s\"", keys[i], commandID, kodicommand);
   }
 
   // TODO: Add check if no other commandID / Kodi commandstring exists!
@@ -82,7 +82,7 @@ void Commandstore::printNVSDebug()
 
 void Commandstore::setCommand(unsigned long ircode, string kodicommand)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   int8_t newCommandID = findCommandID(kodicommand);
   int8_t oldCommandID = getCommandID(ircode);
   unsigned long otherIRCode = 0x00000000;
@@ -99,11 +99,10 @@ void Commandstore::setCommand(unsigned long ircode, string kodicommand)
     }
   }
 
-  ESP_LOGE(LOG_TAG, "newCommandID: %i, oldCommandID: %i, otherIRCode: 0x%08X", newCommandID, oldCommandID, otherIRCode);
+  ESP_LOGI(LOG_TAG, "newCommandID: %i, oldCommandID: %i, otherIRCode: 0x%08X", newCommandID, oldCommandID, otherIRCode);
 
   if(otherIRCode == 0x00000000 && newCommandID < 0) // No other IRcode uses the old kodicommand && the new kodi command does not yet exist in storage
   {
-    ESP_LOGE(LOG_TAG, "Setter %i", 1);
     // Update existing kodicommand!
     if(oldCommandID >= 0)
     {
@@ -115,7 +114,7 @@ void Commandstore::setCommand(unsigned long ircode, string kodicommand)
       
       char cmdnr[3];
       itoa(newCommandID, cmdnr, 10);
-      ESP_LOGE(LOG_TAG, "Set ircode (0x%08X) to  newCommandID: %s", ircode, cmdnr);
+      ESP_LOGI(LOG_TAG, "Set ircode (0x%08X) to  newCommandID: %s", ircode, cmdnr);
       
       setKodiString(newCommandID, kodicommand);
       setCommandID(ircode, newCommandID);
@@ -123,7 +122,6 @@ void Commandstore::setCommand(unsigned long ircode, string kodicommand)
   }
   else if(otherIRCode == 0x00000000) // No other IRcode uses the old kodicommand && the new kodicommand does already exist in storage
   {
-    ESP_LOGE(LOG_TAG, "Setter %i", 2);
     // Update ircode to point to existing new kodicommand
     // Loop over all KodiStrings, slicing out the old kodicommand
     // Loop over all IRCodes, adjusting the commandID where necessary
@@ -136,7 +134,6 @@ void Commandstore::setCommand(unsigned long ircode, string kodicommand)
   }
   else if(newCommandID == -1) // The old kodicommand is used by another IRcode && the new kodicommand does not yet exist in storage
   {
-    ESP_LOGE(LOG_TAG, "Setter %i", 3);
     // No need to remove the old kodicommand
     // Add the new kodicommand to the storage
     
@@ -146,7 +143,6 @@ void Commandstore::setCommand(unsigned long ircode, string kodicommand)
   }
   else // The old kodicommand is used by another IRcode && the new kodicommand does already exist in storage
   {
-    ESP_LOGE(LOG_TAG, "Setter %i", 4);
     // No need to remove the old kodicommand
     // Set the IRCode to point to the correct commandID
 
@@ -161,7 +157,7 @@ void Commandstore::setCommand(unsigned long ircode, string kodicommand)
 
 std::string Commandstore::getCommand(unsigned long ircode)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   int8_t commandID = getCommandID(ircode);
   string kodicommand;
   if(commandID >= 0)
@@ -173,7 +169,7 @@ std::string Commandstore::getCommand(unsigned long ircode)
 
 void Commandstore::removeCommand(unsigned long ircode)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   
   int8_t commandID = getCommandID(ircode);
   uint8_t otherIRCodePos = 0;
@@ -184,7 +180,7 @@ void Commandstore::removeCommand(unsigned long ircode)
     otherIRCode = findIRCode(commandID, otherIRCodePos + 1);
   }
 
-  ESP_LOGE(LOG_TAG, "otherIRCode: 0x%08X", otherIRCode);
+  ESP_LOGI(LOG_TAG, "otherIRCode: 0x%08X", otherIRCode);
   
   if(otherIRCode == 0x00000000) // No other IRCode uses this command, remove it from storage
   {
@@ -197,7 +193,7 @@ void Commandstore::removeCommand(unsigned long ircode)
 
 void Commandstore::removeCommand(int8_t commandID)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   int8_t commandIDLength = getCommandIDNumber();
   int8_t i;
   string tmpKodicommand;
@@ -238,7 +234,7 @@ void Commandstore::getCommands(unsigned long *ircodes)
 
 std::string Commandstore::getKodiString(int8_t commandID)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   char cmdnr[3];
   size_t strlength;
@@ -263,7 +259,7 @@ std::string Commandstore::getKodiString(int8_t commandID)
 
 void Commandstore::setKodiString(int8_t commandID, string kodicommand)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   /*
    * This function only sets the kodicommand at the commandID position,
    * it does not check nor append.
@@ -281,7 +277,7 @@ void Commandstore::setKodiString(int8_t commandID, string kodicommand)
 
 void Commandstore::removeKodiString(int8_t commandID)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   /*
    * This function only removes the key/value from the stringstorage
    * it does no checks, and does not remove the appropriate ircode either.
@@ -298,7 +294,7 @@ void Commandstore::removeKodiString(int8_t commandID)
 
 int8_t Commandstore::findCommandID(string kodicommand)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   int8_t commandLength = getCommandIDNumber();
   char cmdnr[3];
@@ -335,7 +331,7 @@ int8_t Commandstore::findCommandID(string kodicommand)
 
 int8_t Commandstore::getCommandIDNumber()
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   uint8_t keyslength = getKeyNumber();
   unsigned long keys[keyslength];
@@ -356,7 +352,7 @@ int8_t Commandstore::getCommandIDNumber()
 
 int8_t Commandstore::getCommandID(unsigned long ircode)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   char hex[16];
   int8_t id = -1;
@@ -374,7 +370,7 @@ int8_t Commandstore::getCommandID(unsigned long ircode)
 
 void Commandstore::setCommandID(unsigned long ircode, int8_t commandID)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   char hex[16];
   
@@ -387,7 +383,7 @@ void Commandstore::setCommandID(unsigned long ircode, int8_t commandID)
 
 void Commandstore::removeCommandID(unsigned long ircode)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   /*
    * This function only removes the key/value from the cmdstorage
    * it does no checks, and does not remove the appropriate kodi command either.
@@ -405,7 +401,7 @@ void Commandstore::removeCommandID(unsigned long ircode)
 
 uint8_t Commandstore::getKeyNumber()
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   size_t keyssize = 0;
   
@@ -420,7 +416,7 @@ uint8_t Commandstore::getKeyNumber()
 
 void Commandstore::getKeys(unsigned long *ircodes)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   size_t keyssize = 0;
   
@@ -441,10 +437,10 @@ void Commandstore::getKeys(unsigned long *ircodes)
 
 void Commandstore::addKey(unsigned long ircode)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   esp_err_t err;
   uint8_t keyslength = getKeyNumber();
-  ESP_LOGE(LOG_TAG, "Number of keys already known: %i", keyslength);
+  ESP_LOGI(LOG_TAG, "Number of keys already known: %i", keyslength);
   unsigned long keys[keyslength + 1];
   getKeys(keys);
   keys[keyslength] = ircode;
@@ -457,7 +453,7 @@ void Commandstore::addKey(unsigned long ircode)
 
 void Commandstore::removeKey(unsigned long ircode)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   uint8_t keyslength = getKeyNumber();
   unsigned long keys[keyslength];
   int8_t index = indexOfKey(ircode);
@@ -478,7 +474,7 @@ void Commandstore::removeKey(unsigned long ircode)
 
 int8_t Commandstore::indexOfKey(unsigned long ircode)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   uint8_t keyslength = getKeyNumber();
   unsigned long keys[keyslength];
   getKeys(keys);
@@ -495,7 +491,7 @@ int8_t Commandstore::indexOfKey(unsigned long ircode)
 
 unsigned long Commandstore::findIRCode(int8_t commandID, uint8_t startAt, uint8_t *foundAt)
 {
-  ESP_LOGE(LOG_TAG, "Calling function %s", __FUNCTION__);
+  ESP_LOGD(LOG_TAG, "Calling function %s", __FUNCTION__);
   uint8_t keyslength = getKeyNumber();
   unsigned long keys[keyslength];
   int8_t otherCommandID;
