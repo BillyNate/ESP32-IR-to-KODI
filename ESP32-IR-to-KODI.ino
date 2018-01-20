@@ -19,7 +19,10 @@
  * Current code on https://github.com/pcbreflux/espressif/tree/master/esp32/arduino/sketchbook/ESP32_IR_Remote/ir_demo
  */
 #include <numeric>
+#include <DNSServer.h>
+#include <WebServer.h>
 #include <WiFi.h>
+#include <WiFiManager.h>
 
 #include "ESP32_IR_Remote.h"
 #include "xbmcclient.h"
@@ -31,10 +34,8 @@
 
 const int RECV_PIN = 23; // pin on the ESP32
 
-const char* ssid     = ""; // Your network SSID to connect to
-const char* password = ""; // password of the SSID
-const char* kodihost = ""; // IP address of your KODI machine
-const unsigned int kodiport = 9777;
+static char kodihost[16]; // IP address of your KODI machine
+static unsigned int kodiport;
 const char* url = "/";
 const uint16_t wificlientport = 80;
 
@@ -42,7 +43,7 @@ ESP32_IRrecv irrecv(RECV_PIN, 3);
 static unsigned long command = 0;
 
 WiFiUDP udp;
-CXBMCClient eventclient = CXBMCClient(udp, kodihost, kodiport);
+CXBMCClient eventclient;
 
 WiFiServer wifiserver(80);
 
@@ -55,17 +56,51 @@ void setup()
 {
   Serial.begin(115200);
   delay(10);
+
+  Serial.print("Loading kodi parameters from NVS...");
+  char kodiportString[6] = "9777";
+  nvs_handle kodiParameters;
+  size_t strlength;
+  
+  nvs_flash_init();
+  nvs_open("kodi", NVS_READWRITE, &kodiParameters);
+  nvs_get_str(kodiParameters, "kodihost", NULL, &strlength);
+  nvs_get_str(kodiParameters, "kodihost", kodihost, &strlength);
+  nvs_get_str(kodiParameters, "kodiport", NULL, &strlength);
+  nvs_get_str(kodiParameters, "kodiport", kodiportString, &strlength);
+  Serial.println(" Done!");
   
   Serial.print("Starting WiFi...");
-  WiFi.begin(ssid, password);
-  while(WiFi.status() != WL_CONNECTED)
-  {
-      delay(500);
-      Serial.print(".");
-  }
+  WiFiManager wifiManager;
+  WiFiManagerParameter kodihostParameter("kodihost", "Kodi host IP", kodihost, 16);
+  WiFiManagerParameter kodiportParameter("kodiport", "Kodi port", kodiportString, 5);
+  wifiManager.addParameter(&kodihostParameter);
+  wifiManager.addParameter(&kodiportParameter);
+  wifiManager.setConnectTimeout(60);
+  wifiManager.autoConnect(("IR to KODI " + String(ESP_getChipId())).c_str());
   Serial.print(" WiFi connected!");
   Serial.print(" IP address: ");
   Serial.println(WiFi.localIP());
+  
+  strcpy(kodihost, kodihostParameter.getValue());
+  strcpy(kodiportString, kodiportParameter.getValue());
+  kodiport = strtoul(kodiportString, NULL, 10);
+  Serial.print("User defined Kodi host ");
+  Serial.print(kodihost);
+  Serial.print(" with port ");
+  Serial.println(kodiportString);
+  Serial.print("Saving to NVS...");
+  nvs_set_str(kodiParameters, "kodihost", kodihost);
+  nvs_set_str(kodiParameters, "kodiport", kodiportString);
+  nvs_commit(kodiParameters);
+  Serial.println(" Done!");
+
+  // If host or port are empty, force the captive portal:
+  if(strlen(kodihost) <= 0 || strlen(kodiportString) <= 0)
+  {
+    WiFi.disconnect(true);
+    ESP.restart();
+  }
 
   Serial.print("Setting up IR...");
   pinMode(RECV_PIN, INPUT);
@@ -73,6 +108,7 @@ void setup()
   Serial.println(" Done!");
 
   Serial.print("Starting Kodi client...");
+  eventclient.begin(udp, kodihost, kodiport);
   eventclient.SendHELO("ESP32 Remote", ICON_PNG);
   Serial.println(" Complete");
 
