@@ -696,7 +696,7 @@ private:
   unsigned int  m_Port;
   unsigned int  m_UID;
 public:
-  CXBMCClient(WiFiUDP UDP, const char *IP = "127.0.0.1", int Port = 9777, unsigned int UID = 0)
+  begin(WiFiUDP UDP, const char *IP = "127.0.0.1", int Port = 9777, unsigned int UID = 0)
   {
     m_UDP = UDP;
     m_IP = IP;
