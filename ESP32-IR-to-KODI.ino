@@ -20,6 +20,8 @@
  */
 #include <numeric>
 #include <DNSServer.h>
+#include <iomanip>
+#include <sstream>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiManager.h>
@@ -57,6 +59,11 @@ void setup()
   Serial.begin(115200);
   delay(10);
 
+  uint64_t mac = ESP.getEfuseMac();
+  std::stringstream stream;
+  stream << std::setfill('0') << std::setw(12) << std::hex << mac;
+  std::string chipID(stream.str());
+
   Serial.print("Loading kodi parameters from NVS...");
   char kodiportString[6] = "9777";
   nvs_handle kodiParameters;
@@ -77,7 +84,7 @@ void setup()
   wifiManager.addParameter(&kodihostParameter);
   wifiManager.addParameter(&kodiportParameter);
   wifiManager.setConnectTimeout(60);
-  wifiManager.autoConnect(("IR to KODI " + String(ESP_getChipId())).c_str());
+  wifiManager.autoConnect(("IR to KODI " + chipID).c_str());
   Serial.print(" WiFi connected!");
   Serial.print(" IP address: ");
   Serial.println(WiFi.localIP());
