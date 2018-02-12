@@ -20,6 +20,7 @@
  */
 #include <numeric>
 #include <DNSServer.h>
+#include <ESPmDNS.h>
 #include <iomanip>
 #include <sstream>
 #include <WebServer.h>
@@ -81,8 +82,11 @@ void setup()
   WiFiManager wifiManager;
   WiFiManagerParameter kodihostParameter("kodihost", "Kodi host IP", kodihost, 16);
   WiFiManagerParameter kodiportParameter("kodiport", "Kodi port", kodiportString, 5);
+  WiFiManagerParameter custom_text("hostname", "Access conf after saving (copy this)", ("http://irtokodi" + chipID + ".local").c_str(), 35, " readonly");
   wifiManager.addParameter(&kodihostParameter);
   wifiManager.addParameter(&kodiportParameter);
+  wifiManager.addParameter(&custom_text);
+  wifiManager.setSaveConfigCallback(saveConfigCallback);
   wifiManager.setConnectTimeout(60);
   wifiManager.autoConnect(("IR to KODI " + chipID).c_str());
   Serial.print(" WiFi connected!");
@@ -125,6 +129,12 @@ void setup()
   
   Serial.print("Starting webserver...");
   wifiserver.begin();
+  Serial.println(" Done!");
+
+  Serial.print("Starting mDNS with host ");
+  Serial.print(("irtokodi" + chipID + ".local ...").c_str());
+  MDNS.begin(("irtokodi" + chipID).c_str());
+  MDNS.addService("_http", "_tcp", 80);
   Serial.println(" Done!");
 
   Serial.print("Setting up tasks...");
@@ -367,6 +377,12 @@ void readIR(void *parameter)
 void loop()
 {
   delay(portMAX_DELAY);
+}
+
+void saveConfigCallback()
+{
+  // Restart. Because otherwise the WiFiServer will not start properly...
+  ESP.restart();
 }
 
 std::string urlDecode(std::string str)
