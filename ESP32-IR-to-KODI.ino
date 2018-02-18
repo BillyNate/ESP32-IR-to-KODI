@@ -52,6 +52,7 @@ WiFiServer wifiserver(80);
 
 Commandstore cmdstore;
 
+static bool configsaved = false;
 static bool listening = false;
 static unsigned long caught = 0;
 
@@ -110,6 +111,10 @@ void setup()
   if(strlen(kodihost) <= 0 || strlen(kodiportString) <= 0)
   {
     WiFi.disconnect(true);
+    ESP.restart();
+  }
+  else if(configsaved)
+  {
     ESP.restart();
   }
 
@@ -382,7 +387,7 @@ void loop()
 void saveConfigCallback()
 {
   // Restart. Because otherwise the WiFiServer will not start properly...
-  ESP.restart();
+  configsaved = true;
 }
 
 std::string urlDecode(std::string str)
